@@ -1,4 +1,4 @@
-// title:   Katari-Space78
+// title:   Katari Space '78
 // author:  lurkyphish2085
 // desc:    testing collisions and ships
 // license: MIT License (change this to your license of choice)
