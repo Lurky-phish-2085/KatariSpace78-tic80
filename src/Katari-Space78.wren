@@ -1,4 +1,4 @@
-// title:   space game prototype
+// title:   Katari-Space78
 // author:  lurkyphish2085
 // desc:    testing collisions and ships
 // license: MIT License (change this to your license of choice)

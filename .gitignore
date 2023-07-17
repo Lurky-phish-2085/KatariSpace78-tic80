@@ -1,2 +1,5 @@
-diary
-resources
+diary/
+resources/
+builds/
+.local/
+build.sh
