@@ -227,57 +227,20 @@ class Game is TIC{
 
 	construct new(){
 		_tick=0
-		
-		_p1 = Player.new(4, 50)
-		
-		_e1 = Enemy.new(WIDTH - 6, 50, 48)
-		_e2 = Enemy.new(WIDTH - 12, 50, 36)
-		_e3 = Enemy.new(WIDTH - 18, 50, 8)
-		_e4 = Enemy.new(WIDTH - 24, 50, 18)
-		
-		_e5 = Enemy.new(WIDTH - 30, 50, 48)
-		_e6 = Enemy.new(WIDTH - 42, 50, 36)
-		_e7 = Enemy.new(WIDTH - 60, 50, 8)
-		_e8 = Enemy.new(WIDTH - 84, 50, 18)
-		
-		ENEMIES = [_e1, _e2, _e3, _e4, _e5, _e6, _e7, _e8]
 	}
 	
 	UPDATE() {
-	  _p1.update()
-    
-    ENEMIES.each {|enemy|
-      enemy.update()
-    }
-    
-    BULLETS.each {|bullet|
-      bullet.update()
-    }
-    
-    if (ENEMIES.count == 0) {
-  		TIC.print("YOU WON!", WIDTH/2, HEIGHT/2, 5)
-    }
+	
+	  _tick = _tick + 1
 	}
 	
 	DRAW() {
-    _p1.draw()
-
-    ENEMIES.each {|enemy|
-      enemy.draw()
-    }
-    
-    BULLETS.each {|bullet|
-      bullet.draw()
-    }
   }
 	
 	TIC(){
 		TIC.cls(13)
 		this.UPDATE()
 		this.DRAW()
-		
-		TIC.print("BULLETS: %(BULLETS.count)", 4, 1)
-		TIC.print("ENEMIES: %(ENEMIES.count)", 4, 8)
   }
 }
 
