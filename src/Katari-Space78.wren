@@ -130,7 +130,40 @@ class Bullet is Entity {
 }
 
 class Player is Entity {
+  
+  construct new(x, y, w, h, speed) {
+    super(x, y, w, h, speed)
+    _score = 0
+  }
+
+  score {_score}
+
+  score=(value) {_score = value}
+
+  evalInput() {
+    if (TIC.btn(BTN_LEFT)) {
+      x = x + -speed
+    }
+    if (TIC.btn(BTN_RIGHT)) {
+      x = x + speed
+    }
+
+    if (TIC.btn(BTN_A) || TIC.btn(KEY_SPC)) {
+      // fire()
+    }
+  }
+
+  update() {
+    super.update()
+    evalInput()
+  }
+
+  draw() {
+    super.draw()
+    TIC.rect(x, y, w, h, 0)
+  }
 }
+
 
 class Enemy is Entity {
   
@@ -253,16 +286,19 @@ class Game is TIC {
     _x = 86
     _y = 84
 
+    _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new()
   }
 
   UPDATE() {
+    _p1.update()
     _eg.update()
 
     _tick = _tick + 1
   }
 
   DRAW() {
+    _p1.draw()
     _eg.draw()
     TIC.print("Katari-Space78", _x, _y)
     TIC.print("Alien Movement Test", _x - 16, _y + 8)
