@@ -21,28 +21,87 @@ var KEY_SPC=48
 
 class Entity {
 
-  construct new(x, y) {
+  construct new(x, y, w, h, speed) {
     _x = x
     _y = y
+    _w = w
+    _h = h
+    _speed = speed
+
+    _hitbox = Hitbox.new(this)
   }
   
   x {_x}
   y {_y}
-  
+  w {_w}
+  h {_h}
+  speed {_speed}
+  hitbox {_hitbox}
+
   x=(value) {_x = value}
   y=(value) {_y = value}
-  
+  w=(value) {_w = value}
+  h=(value) {_h = value}
+  speed=(value) {_speed = value}
+
   update() {
+    _hitbox.update()
   }
-  
+
   draw() {
+    _hitbox.draw()
   }
 }
 
-class Collision {
+class Hitbox {
+  
+  construct new(entity) {
+    if (!(entity is Entity)) {
+      Fiber.abort("Hitbox init error: supplied argument to constructor is not an instance of the class Entity")
+    }
+    
+    _debugMode = false
 
-  static check(a, b) {
+    _entity = entity
+    _x = entity.x
+    _y = entity.y
+    _w = entity.w
+    _h = entity.h
+    
+    _defaultColor = 0
+    _onCollisionColor = 4
+    _color = 0
+  }
+  construct new(entity, debugMode) {
+    if (!(entity is Entity)) {
+      Fiber.abort("Hitbox init error: supplied argument to constructor is not an instance of the class Entity")
+    }
+    
+    _debugMode = debugMode
 
+    _entity = entity
+    _x = entity.x
+    _y = entity.y
+    _w = entity.w
+    _h = entity.h
+    
+    _defaultColor = 2
+    _onCollisionColor = 5
+    _color = _defaultColor
+  }
+
+  debugMode {_debugMode}
+  debugMode=(value) {_debugMode = value}
+  
+  flash() {
+    _color = _onCollisionColor
+  }
+
+  static checkCollision(a, b) {
+    if (!(a is Entity && b is Entity)) {
+      Fiber.abort("Hitbox method error: supplied arguments to method is not an instance of the class Entity")
+    }
+    
     var xd = ((a.x + (a.w/2)) - (b.x + (b.w/2))).abs
     var xs = a.w*0.5 + b.w*0.5
     var yd = ((a.y + (a.h/2)) - (b.y + (b.h/2))).abs
@@ -51,196 +110,168 @@ class Collision {
     return (xd < xs && yd < ys)
   }
   
-  static debug(a, b) {
-  
-    var xd = ((a.x + (a.w/2)) - (b.x + (b.w/2))).abs
-    var xs = a.w/2 + b.w/2
-    var yd = ((a.y + (a.h/2)) - (b.y + (b.h/2))).abs
-    var ys = a.h/2 + b.h/2  
-    
-    TIC.print("xd: %(xd)", WIDTH - 6-40, 4)
-    TIC.print("xs: %(xs)", WIDTH - 6-40, 10)
-    TIC.print("yd: %(yd)", WIDTH - 6-40, 16)
-    TIC.print("ys: %(ys)", WIDTH - 6-40, 22)
-
-    TIC.trace("xd: %(xd)")
-    TIC.trace("xs: %(xs)")
-    TIC.trace("yd: %(yd)")
-    TIC.trace("ys: %(ys)")
-  }
-}
-
-class Hitbox is Entity {
-
-  construct new(entity) {
-    super(x, y)
-    _w = entity.w
-    _h = entity.h
-
-    _entity = entity
-  }
-
   update() {
-     x = _entity.x
-     y = _entity.y
+    _x = _entity.x
+    _y = _entity.y
     _w = _entity.w
     _h = _entity.h
   }
-}
 
-var BULLETS = []
-
-class Bullet is Entity {
-
-  construct new(x, y, speed) {
-    super(x, y)
-
-    _w = 4
-    _h = 1
-    _speed = speed
-
-    _hitbox = Hitbox.new(this)
-  }
-
-  w {_w}
-  h {_h}
-
-  hitbox {_hitbox}
-  
-  update() {
-    if (x > WIDTH) {
-      BULLETS.remove(this)
+  draw() {
+    if (!_debugMode) {
       return
     }
-    
-    _hitbox.update()
-    x = x + _speed
+
+    TIC.rectb(_x, _y, _w, _h, _color) 
   }
-  
-  draw() {
-    TIC.rect(x, y, _w, _h, 0)
-  }
+}
+
+class Bullet is Entity {
 }
 
 class Player is Entity {
-
-  construct new(x, y) {
-    super(x, y)
-    _w = 2
-    _h = 2
-
-    _hitbox = Hitbox.new(this)
-  }
-
-  w {_w}
-  h {_h}
-
-  hitbox {_hitbox}
-  
-  fire() {
-    TIC.spr(2, x+1, y-4)
-    BULLETS.add(Bullet.new(x+5, y+1, 6))
-    TIC.sfx(0, "A-4", 6)
-  }
-  
-  update() {
-    if (TIC.btn(BTN_UP)) {
-      y = y - 1
-    }
-    if (TIC.btn(BTN_DOWN)) {
-      y = y + 1
-    }
-    
-    if (TIC.btnp(BTN_A) || TIC.keyp(KEY_SPC, 1, -1)) {
-      this.fire()
-    }
-
-    _hitbox.update()
-  }
-  
-  draw() {
-    TIC.rect(x, y, _w, _h, 0)
-  }
 }
-
-var ENEMIES = []
 
 class Enemy is Entity {
-
-
-  construct new(x, y, seed) {
-    super(x, y)
-
-    import "random" for Random
-    
-    _w = 4
-    _h = 4
-    
-    _random = Random.new(seed)
-    _speed = _random.int(1, 3.5)
-
-    _highBoundary = 20
-    _lowBoundary = HEIGHT - 20
-
-    _hitbox = Hitbox.new(this)
-  }
-
-  w {_w}
-  h {_h}
-
-  hitbox {_hitbox}
   
-  checkHit() {
-    BULLETS.each {|bullet|
-      if (Collision.check(this, bullet)) {
-        TIC.sfx(1, "A-4", 4)
-        TIC.spr(3, x, y)
-        BULLETS.remove(bullet)
-        ENEMIES.remove(this)
-      }
-      if (ENEMIES.count == 0) {
-        TIC.music(0, -1, -1, true)
-      }
-    }
-  }
-
-  update() {
-    var isHigher = y < _highBoundary
-    var isLower = y > _lowBoundary
+  construct new(x, y, w, h, speed) {
+    super(x, y, w, h, speed)
     
-    if (isHigher || isLower) {
-      _speed = -_speed
+    _minX = 6
+    _maxX = WIDTH - _minX
+    _maxY = HEIGHT
+    
+    _wentEitherSides = false
+  }
+  
+  wentEitherSides {_wentEitherSides}
+  wentEitherSides=(value) {_wentEitherSides = value}
+  
+  checkBoundaryHit() {
+    return ((x+w) >= _maxX) || (x <= _minX)
+  }
+  
+  move() {
+    x = x + speed
+  }
+  
+  progressDirection() {
+    _wentEitherSides = false
+    x = x -speed
+    speed = -speed
+    y = y + 4
+  }
+  
+  update() {
+    super.update()
+    move()
+    
+    if (checkBoundaryHit()) {
+      _wentEitherSides = true
     }
-
-    y = y + _speed
-
-    _hitbox.update()
-    checkHit()
   }
   
   draw() {
-   TIC.rect(x, y, _w, _h, 0)
+    super.draw()
+    TIC.rectb(x, y, w, h, 0) 
   }
 }
 
-class Game is TIC{
+class EnemyGroup {
 
-	construct new(){
-		_tick=0
-	}
-	
-	UPDATE() {
-	
-	  _tick = _tick + 1
-	}
-	
-	DRAW() {
+  construct new() {
+  
+    _defaultX = 6
+    _x = _defaultX
+    _y = 6
+    _speed = 1
+    _numOfRows = 6
+    _numOfEnemyPerRow = 6
+    
+    /* TODO:
+    
+       maybe add fields for the w and h of
+       enemy
+    */
+    
+    _rows = []
+    for (i in 1.._numOfRows) {
+      _rows.add([])
+    }
+    
+    _rows.each {|row|
+      for (i in 1.._numOfEnemyPerRow) {
+        row.add(Enemy.new(_x, _y , 8, 8, _speed))
+        _x = _x + 8*2
+      }
+
+     _x = _defaultX
+     _y = _y + 8*2 - 6
+    }
   }
-	
-	TIC(){
-		TIC.cls(13)
-		this.UPDATE()
-		this.DRAW()
+  
+  directProgress() {
+    _rows.each {|row|
+      row.each {|enemy|
+         enemy.progressDirection()
+      }
+    }
+  }
+    
+    
+  checkBoundaryHit() {
+    _rows.each {|row|
+      row.each {|enemy|
+        if (enemy.wentEitherSides) {
+          directProgress()
+          return
+        }
+      }
+    }
+  }
+  
+  update() {
+    checkBoundaryHit()
+    
+    _rows.each {|row|
+      row.each {|enemy| enemy.update()}
+    }  
+  }
+  
+  draw() {
+    _rows.each {|row|
+      row.each {|enemy| enemy.draw()}
+    }
+  }
+}
+
+class Game is TIC {
+
+  construct new() {
+    _tick = 0
+    _bgColor = 13
+    _x = 86
+    _y = 84
+
+    _eg = EnemyGroup.new()
+  }
+
+  UPDATE() {
+    _eg.update()
+
+    _tick = _tick + 1
+  }
+
+  DRAW() {
+    _eg.draw()
+    TIC.print("Katari-Space78", _x, _y)
+    TIC.print("Alien Movement Test", _x - 16, _y + 8)
+  }
+
+  TIC() {
+    TIC.cls(_bgColor)
+    this.UPDATE()
+    this.DRAW()
   }
 }
 
