@@ -126,7 +126,66 @@ class Hitbox {
   }
 }
 
+class Explosion is Entity {
+
+  construct new(x, y) {
+    super(x, y, 8, 8, 0)
+    _sprite = 376
+  }
+
+  draw() {
+    TIC.spr(_sprite, x - w/2, y - 6, 0)
+  }
+}
+
 class Bullet is Entity {
+
+  construct new(holder, w, h, speed) {
+    super(holder.x, holder.y, w, h, speed)
+
+    _holder = holder
+    _isLaunched = false
+
+    _launchPosX = holder.x
+    _launchPosY = holder.y
+    _maxY = 6
+  }
+
+  isLaunched {_isLaunched}
+
+  launch() {
+    _isLaunched = true
+    x = _launchPosX
+  }
+
+  wentOutOfBounds() {
+    return y <= _maxY
+  }
+
+  update() {
+    _launchPosX = _holder.x + (_holder.w / 2) - 1
+
+    if (wentOutOfBounds()) {
+      Explosion.new(x, y).draw()
+      _isLaunched = false
+      x = _launchPosX
+      y = _launchPosY
+    }
+
+    if (!_isLaunched) {
+      return
+    }
+
+    y = y + -speed
+  }
+
+  draw() {
+    if (!_isLaunched) {
+      return
+    }
+
+    TIC.spr(375, x, y, 0)
+  }
 }
 
 class Player is Entity {
@@ -134,11 +193,23 @@ class Player is Entity {
   construct new(x, y, w, h, speed) {
     super(x, y, w, h, speed)
     _score = 0
+    _bullet = Bullet.new(this, 1, 4, 2)
+
+    _fireSfx = 0
   }
 
   score {_score}
 
   score=(value) {_score = value}
+
+  fire() {
+    if (_bullet.isLaunched) {
+      return
+    }
+
+    TIC.sfx(_fireSfx)
+    _bullet.launch()
+  }
 
   evalInput() {
     if (TIC.btn(BTN_LEFT)) {
@@ -148,19 +219,22 @@ class Player is Entity {
       x = x + speed
     }
 
-    if (TIC.btn(BTN_A) || TIC.btn(KEY_SPC)) {
-      // fire()
+    if (TIC.btn(BTN_A) || TIC.key(KEY_SPC)) {
+      fire()
     }
   }
 
   update() {
     super.update()
+    _bullet.update()
     evalInput()
   }
 
   draw() {
     super.draw()
-    TIC.rect(x, y, w, h, 0)
+    _bullet.draw()
+    //TIC.rect(x, y, w, h, 0)
+    TIC.spr(368, x, y, 0, 1, 0, 0, 2, 1)
   }
 }
 
@@ -206,7 +280,7 @@ class Enemy is Entity {
   
   draw() {
     super.draw()
-    TIC.rectb(x, y, w, h, 0) 
+    TIC.rectb(x, y, w, h, 12) 
   }
 }
 
@@ -282,7 +356,7 @@ class Game is TIC {
 
   construct new() {
     _tick = 0
-    _bgColor = 13
+    _bgColor = 0
     _x = 86
     _y = 84
 
@@ -300,8 +374,8 @@ class Game is TIC {
   DRAW() {
     _p1.draw()
     _eg.draw()
-    TIC.print("Katari-Space78", _x, _y)
-    TIC.print("Alien Movement Test", _x - 16, _y + 8)
+    TIC.print("Katari-Space78", _x, _y, 12)
+    TIC.print("Alien Movement Test", _x - 16, _y + 8, 12)
   }
 
   TIC() {
@@ -376,7 +450,7 @@ class Game is TIC {
 // 116:0050000050000005005000000000050500500005000500000000555500555055
 // 117:0005500000000005055000000000005050055005555000005555000055550050
 // 119:5000000050000000500000005000000000000000000000000000000000000000
-// 120:c000c00c00c000c00cccccc0cccccccccccccccc0cccccc000c00c00c00c000c
+// 120:2000200200200020022222202222222222222222022222200020020020020002
 // 122:0000055500005555000555550055555505555555055555550555555505555555
 // 123:5555555555555555555555555555555555555555555555555555555555555555
 // 124:5000000055000000555000005555000055555000555550005555500055555000
@@ -417,7 +491,7 @@ class Game is TIC {
 // </WAVES>
 
 // <SFX>
-// 000:00d100d500c500c500b600b600a600960085006600510036000300060005000500050005000600070000000000000000000000000000000000000000422000000000
+// 000:00d100d500c500c500b600b600a60096008500660051003600030006000500050005000500060007100020004000600080009000a000e000f000f000329000000000
 // 001:030003000300030003000300030003000300030003000300030003000300030003000300030003000300030003000300030003000300030003000300331000000000
 // 008:02000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020070b000000000
 // </SFX>
