@@ -201,7 +201,7 @@ class Player is Entity {
     _score = 0
     _bullet = Bullet.new(this, 1, 4, 2)
 
-    _fireSfx = 0
+    _fireSfx = 1
   }
 
   score {_score}
@@ -214,7 +214,7 @@ class Player is Entity {
       return
     }
 
-    TIC.sfx(_fireSfx)
+    TIC.sfx(_fireSfx, "A-3", 16)
     _bullet.launch()
   }
 
@@ -255,7 +255,7 @@ class Enemy is Entity {
       Fiber.abort("Enemy init error: supplied arguments to constructor is not an instance of the class Bullet")
     }
 
-    _destorySfx = 1
+    _destorySfx = 0
     
     _minX = 6
     _maxX = WIDTH - _minX
@@ -298,7 +298,7 @@ class Enemy is Entity {
 
     if (_destroyed) {
       _playerBullet.destroy()
-      TIC.sfx(_destorySfx)
+      TIC.sfx(_destorySfx, "A-4", 16)
     }
   }
   
@@ -530,8 +530,8 @@ class Game is TIC {
 // </WAVES>
 
 // <SFX>
-// 000:00d100d500c500c500b600b600a60096008500660051003600030006000500050005000500060007100020004000600080009000a000e000f000f000324000000000
-// 001:03c023904370537f536e635d734d833db31bd309e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f30029b000000000
+// 000:00d100d500c500c500b600b600a60096008500660051003600030006000500050005000500060007100020004000600080009000a000e000f000f000329000000000
+// 001:03c02390437053705362635273438334b316d300e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300279000000000
 // 008:02000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020070b000000000
 // </SFX>
 
