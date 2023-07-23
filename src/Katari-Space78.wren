@@ -145,6 +145,7 @@ class Bullet is Entity {
 
     _holder = holder
     _isLaunched = false
+    _isDestroyed = false
 
     _launchPosX = holder.x
     _launchPosY = holder.y
@@ -162,12 +163,17 @@ class Bullet is Entity {
     return y <= _maxY
   }
 
+  destroy() {
+    _isDestroyed = true
+  }
+
   update() {
     _launchPosX = _holder.x + (_holder.w / 2) - 1
 
-    if (wentOutOfBounds()) {
+    if (wentOutOfBounds() || _isDestroyed) {
       Explosion.new(x, y).draw()
       _isLaunched = false
+      _isDestroyed = false
       x = _launchPosX
       y = _launchPosY
     }
@@ -199,6 +205,7 @@ class Player is Entity {
   }
 
   score {_score}
+  bullet {_bullet}
 
   score=(value) {_score = value}
 
@@ -241,18 +248,29 @@ class Player is Entity {
 
 class Enemy is Entity {
   
-  construct new(x, y, w, h, speed) {
+  construct new(x, y, w, h, speed, playerBullet) {
     super(x, y, w, h, speed)
+
+    if (!(playerBullet is Bullet)) {
+      Fiber.abort("Enemy init error: supplied arguments to constructor is not an instance of the class Bullet")
+    }
     
     _minX = 6
     _maxX = WIDTH - _minX
     _maxY = HEIGHT
     
+    _playerBullet = playerBullet
+    _destroyed = false
     _wentEitherSides = false
   }
   
+  destroyed  {_destroyed}
   wentEitherSides {_wentEitherSides}
   wentEitherSides=(value) {_wentEitherSides = value}
+
+  checkHit() {
+    return Hitbox.checkCollision(this, _playerBullet)
+  }
   
   checkBoundaryHit() {
     return ((x+w) >= _maxX) || (x <= _minX)
@@ -273,8 +291,11 @@ class Enemy is Entity {
     super.update()
     move()
     
-    if (checkBoundaryHit()) {
-      _wentEitherSides = true
+    _wentEitherSides = checkBoundaryHit()
+    _destroyed = checkHit()
+
+    if (_destroyed) {
+      _playerBullet.destroy()
     }
   }
   
@@ -286,8 +307,10 @@ class Enemy is Entity {
 
 class EnemyGroup {
 
-  construct new() {
+  construct new(player) {
   
+    _player = player
+
     _defaultX = 6
     _x = _defaultX
     _y = 6
@@ -308,7 +331,7 @@ class EnemyGroup {
     
     _rows.each {|row|
       for (i in 1.._numOfEnemyPerRow) {
-        row.add(Enemy.new(_x, _y , 8, 8, _speed))
+        row.add(Enemy.new(_x, _y , 8, 8, _speed, _player.bullet))
         _x = _x + 8*2
       }
 
@@ -325,20 +348,33 @@ class EnemyGroup {
     }
   }
     
-    
   checkBoundaryHit() {
     _rows.each {|row|
       row.each {|enemy|
-        if (enemy.wentEitherSides) {
-          directProgress()
+        if (!enemy.wentEitherSides) {
           return
         }
+
+        directProgress()
+      }
+    }
+  }
+
+  removeDestroyedEnemy() {
+    _rows.each {|row|
+      row.each {|enemy|
+        if (!enemy.destroyed) {
+          return
+        }
+
+        row.remove(enemy)
       }
     }
   }
   
   update() {
     checkBoundaryHit()
+    removeDestroyedEnemy()
     
     _rows.each {|row|
       row.each {|enemy| enemy.update()}
@@ -361,7 +397,7 @@ class Game is TIC {
     _y = 84
 
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
-    _eg = EnemyGroup.new()
+    _eg = EnemyGroup.new(_p1)
   }
 
   UPDATE() {
