@@ -334,7 +334,7 @@ class EnemyGroup {
     _defaultX = 6
     _x = _defaultX
     _y = 6
-    _speed = 1
+    _speed = 3
     _numOfRows = 6
     _numOfEnemyPerRow = 11
     
@@ -447,6 +447,11 @@ class Game is TIC {
   DRAW() {
     _p1.draw()
     _eg.draw()
+
+    if (_p1.isDestroyed) {
+      TIC.print("GAME OVER", _x + 6, 20, 12)
+    }
+
     TIC.print("Katari Space '78", _x - 6, _y, 12)
     TIC.print("Gameplay Prototype", _x - 16, _y + 8, 12)
   }
