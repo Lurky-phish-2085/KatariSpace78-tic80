@@ -334,9 +334,9 @@ class EnemyGroup {
     _defaultX = 6
     _x = _defaultX
     _y = 6
-    _speed = 3
+    _speed = 1
     _numOfRows = 6
-    _numOfEnemyPerRow = 11
+    _numOfEnemyPerRow = 6
     
     /* TODO:
     
@@ -358,6 +358,16 @@ class EnemyGroup {
      _x = _defaultX
      _y = _y + 8*2 - 6
     }
+  }
+  
+  isEmpty() {
+    for (row in _rows) {
+      if (row.count != 0) {
+        return false
+      }
+    }
+    
+    return true
   }
   
   directProgress() {
@@ -432,7 +442,7 @@ class Game is TIC {
     _bgColor = 0
     _x = 86
     _y = 84
-
+    
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new(_p1)
   }
@@ -447,9 +457,14 @@ class Game is TIC {
   DRAW() {
     _p1.draw()
     _eg.draw()
+    
+    if (_eg.isEmpty()) {
+      TIC.print("YOU WIN!", _x + 12, 20, 12)
+      //TIC.music(0, -1, -1, true)
+    }
 
     if (_p1.isDestroyed) {
-      TIC.print("GAME OVER", _x + 6, 20, 12)
+      TIC.print("GAME OVER!", _x + 6, 20, 12)
     }
 
     TIC.print("Katari Space '78", _x - 6, _y, 12)
