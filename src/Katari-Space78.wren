@@ -214,7 +214,7 @@ class Player is Entity {
       return
     }
 
-    TIC.sfx(_fireSfx, "A-3", 16)
+    TIC.sfx(_fireSfx, "A-3", -1, 0)
     _bullet.launch()
   }
 
@@ -298,7 +298,7 @@ class Enemy is Entity {
 
     if (_destroyed) {
       _playerBullet.destroy()
-      TIC.sfx(_destorySfx, "A-4", 16)
+      TIC.sfx(_destorySfx, "A-4", -1, 1)
     }
   }
   
@@ -319,7 +319,7 @@ class EnemyGroup {
     _y = 6
     _speed = 1
     _numOfRows = 6
-    _numOfEnemyPerRow = 6
+    _numOfEnemyPerRow = 11
     
     /* TODO:
     
