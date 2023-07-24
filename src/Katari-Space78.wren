@@ -198,16 +198,25 @@ class Player is Entity {
   
   construct new(x, y, w, h, speed) {
     super(x, y, w, h, speed)
+    _sprite = 368
     _score = 0
     _bullet = Bullet.new(this, 1, 4, 2)
-
+    _destroyed = false
+    _destorySfx = 2
     _fireSfx = 1
   }
 
   score {_score}
   bullet {_bullet}
 
+  isDestroyed {_destroyed}
+
   score=(value) {_score = value}
+
+  kill() {
+    _destroyed = true
+    TIC.sfx(_destorySfx, "A-2", -1, 0)
+  }
 
   fire() {
     if (_bullet.isLaunched) {
@@ -219,6 +228,10 @@ class Player is Entity {
   }
 
   evalInput() {
+    if (_destroyed) {
+      return
+    }
+
     if (TIC.btn(BTN_LEFT)) {
       x = x + -speed
     }
@@ -235,13 +248,17 @@ class Player is Entity {
     super.update()
     _bullet.update()
     evalInput()
+
+    if (_destroyed) {
+      _sprite = 372
+    }
   }
 
   draw() {
     super.draw()
     _bullet.draw()
     //TIC.rect(x, y, w, h, 0)
-    TIC.spr(368, x, y, 0, 1, 0, 0, 2, 1)
+    TIC.spr(_sprite, x, y, 0, 1, 0, 0, 2, 1)
   }
 }
 
@@ -350,6 +367,18 @@ class EnemyGroup {
       }
     }
   }
+
+  checkPlayerHit() {
+    _rows.each {|row|
+      row.each {|enemy|
+        if (!(Hitbox.checkCollision(enemy, _player))) {
+          return
+        }
+
+        _player.kill()
+      }
+    }
+  }
     
   checkBoundaryHit() {
     _rows.each {|row|
@@ -376,6 +405,11 @@ class EnemyGroup {
   }
   
   update() {
+    if (_player.isDestroyed) {
+      return
+    }
+
+    checkPlayerHit()
     checkBoundaryHit()
     removeDestroyedEnemy()
     
@@ -531,7 +565,8 @@ class Game is TIC {
 
 // <SFX>
 // 000:00d100d500c500c500b600b600a60096008500660051003600030006000500050005000500060007100020004000600080009000a000e000f000f000329000000000
-// 001:03c02390437053705362635273438334b316d300e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300279000000000
+// 001:03c02390437053705362635273438334b316d300e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300377000000000
+// 002:0300030003900340037e031d035c036b035b039b036b039b136a23a933895399739a83009300b300c300c300c300e300e300e300e300e300e300f3000e9000000000
 // 008:02000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020070b000000000
 // </SFX>
 
