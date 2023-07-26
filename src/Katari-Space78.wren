@@ -420,6 +420,19 @@ class EnemyGroup {
     }
   }
 
+  checkHomeBaseHit() {
+    _rows.each {|row|
+        row.each {|enemy|
+          if (!(enemy.y + enemy.h >= _player.y)) {
+            return
+          }
+
+          directProgress()
+          _player.kill()
+        }
+    }
+  }
+
   checkPlayerHit() {
     _rows.each {|row|
       row.each {|enemy|
@@ -461,6 +474,7 @@ class EnemyGroup {
       return
     }
 
+    checkHomeBaseHit()
     checkPlayerHit()
     checkBoundaryHit()
     removeDestroyedEnemy()
