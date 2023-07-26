@@ -491,6 +491,71 @@ class EnemyGroup {
   }
 }
 
+class ShieldParts is Entity {
+
+  construct new(sprite, x, y, w, h) {
+    super(x, y, w, h, 0)
+
+    _sprite = sprite
+    _hp = 4
+    _hitSprites = [397, 398, 399]
+  }
+
+  isDestroyed {_hp == 0}
+
+  update() {
+    super.update()
+
+    if (_hp == 3) {
+      _sprite = _hitSprites[0]
+    }
+    if (_hp == 2) {
+      _sprite = _hitSprites[1]
+    }
+    if (_hp == 1) {
+      _sprite = _hitSprites[2]
+    }
+  }
+
+  draw() {
+    super.draw()
+    TIC.spr(_sprite, x, y, 0, 1, 0, 0, 1, 1)
+    //TIC.spr(_hitSprites[0], x, y, 5, 1, 0, 0, 1, 1)
+  }
+}
+
+class Shield is Entity {
+
+  construct new(x, y) {
+    super(x, y, 20, 16, 0)
+
+    _parts = [
+      ShieldParts.new(378, x, y, 7, 8),
+      ShieldParts.new(379, x + 7, y, 8, 8),
+      ShieldParts.new(380, x + 15, y, 5, 8),
+      ShieldParts.new(394, x, y + 8, 7, 8),
+      ShieldParts.new(395, x + 7, y + 8, 8, 6),
+      ShieldParts.new(396, x + 15, y + 8, 5, 8),
+    ]
+  }
+
+  update() {
+    super.update()
+
+    _parts.each {|part|
+      part.update()
+    }
+  }
+
+  draw() {
+    super.draw()
+
+    _parts.each {|part|
+      part.draw()
+    }
+  }
+}
+
 class Game is TIC {
 
   construct new() {
@@ -501,11 +566,13 @@ class Game is TIC {
     
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new(_p1)
+    _shield = Shield.new(20, 20)
   }
 
   UPDATE() {
     _p1.update()
     _eg.update()
+    _shield.update()
 
     _tick = _tick + 1
   }
@@ -513,6 +580,7 @@ class Game is TIC {
   DRAW() {
     _p1.draw()
     _eg.draw()
+    _shield.draw()
     
     if (_eg.isEmpty()) {
       TIC.font("YOU WIN!", _x + 6, 20, 0, 8, 8, true)
@@ -613,8 +681,8 @@ class Game is TIC {
 // 139:5555555555555555555555555555555500000055000000050000000000000000
 // 140:5555500055555000555550005555500055555000555550005555500055555000
 // 141:0555500550555050050555055555555055555550500550050550050550555055
-// 142:0505050550505050050505055050505005050505505050500505050550505050
-// 143:0050000550505050050505055050505000050500550550050550050000505055
+// 142:0505500550500050050555055055055005505050500550050500050550550050
+// 143:5000000000505055050505005050505000050500050550050050050050000050
 // 144:00c00000c00c000cc0ccccccccc0ccc0cccccccc00cccccc00c000000c000000
 // 145:c000000000c00000c0c00000ccc00000ccc00000c0000000c00000000c000000
 // 146:00c00000000c000c00cccccc0cc0ccc0ccccccccc0ccccccc0c00000000cc0cc
