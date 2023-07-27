@@ -497,6 +497,7 @@ class ShieldParts is Entity {
     super(x, y, w, h, 0)
 
     _sprite = sprite
+    _damageSpriteOverlay = 0
     _hp = 3
     _hitSprites = [397, 398, 399]
   }
@@ -511,17 +512,20 @@ class ShieldParts is Entity {
     super.update()
 
     if (_hp == 2) {
-      _sprite = _hitSprites[1]
+      _damageSpriteOverlay = _hitSprites[1]
     }
     if (_hp == 1) {
-      _sprite = _hitSprites[2]
+      _damageSpriteOverlay = _hitSprites[2]
     }
   }
 
   draw() {
     super.draw()
     TIC.spr(_sprite, x, y, 0, 1, 0, 0, 1, 1)
-    //TIC.spr(_hitSprites[0], x, y, 5, 1, 0, 0, 1, 1)
+
+    if (_hp < 3) {
+      TIC.spr(_damageSpriteOverlay, x, y, 5, 1, 0, 0, 1, 1)
+    }
   }
 }
 
