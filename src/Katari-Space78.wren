@@ -202,7 +202,7 @@ class Player is Entity {
     _score = 0
     _bullet = Bullet.new(this, 1, 4, 2)
     _destroyed = false
-    _destorySfx = 2
+    _destroySfx = 2
     _fireSfx = 1
   }
 
@@ -215,7 +215,7 @@ class Player is Entity {
 
   kill() {
     _destroyed = true
-    TIC.sfx(_destorySfx, "A-2", -1, 0)
+    TIC.sfx(_destroySfx, "A-2", -1, 0)
   }
 
   fire() {
@@ -273,7 +273,7 @@ class Enemy is Entity {
 
     _sprite = sprite
 
-    _destorySfx = 0
+    _destroySfx = 0
     
     _minX = 6
     _maxX = WIDTH - _minX
@@ -293,7 +293,7 @@ class Enemy is Entity {
 
     _sprite = enemy.sprite
 
-    _destorySfx = 0
+    _destroySfx = 0
     
     _minX = 6
     _maxX = WIDTH - _minX
@@ -338,7 +338,7 @@ class Enemy is Entity {
 
     if (_destroyed) {
       _playerBullet.destroy()
-      TIC.sfx(_destorySfx, "A-4", -1, 1)
+      TIC.sfx(_destroySfx, "A-4", -1, 1)
     }
   }
   
@@ -401,6 +401,8 @@ class EnemyGroup {
       _y = _y + 8*2-4
     }
   }
+
+  enemyRows {_rows}
   
   isEmpty() {
     for (row in _rows) {
@@ -588,9 +590,10 @@ class Shield is Entity {
 
 class ShieldRow {
 
-  construct new(player) {
+  construct new(player, enemyGroup) {
 
     _player = player
+    _enemyGroup = enemyGroup
     _numOfShields = 3
 
     _defaultX = 30
@@ -606,7 +609,24 @@ class ShieldRow {
     }
   }
 
+  destroy() {
+    _shields.clear()
+  }
+
+  checkHit() {
+    _enemyGroup.enemyRows.each {|row|
+      row.each {|enemy|
+        if (!(enemy.y + enemy.h >= _y)) {
+          return
+        }
+
+        destroy()
+      }
+    }
+  }
+
   update() {
+    checkHit()
     _shields.each {|shield|
       shield.update()
     }
@@ -629,7 +649,7 @@ class Game is TIC {
     
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new(_p1)
-    _sr = ShieldRow.new(_p1)
+    _sr = ShieldRow.new(_p1, _eg)
   }
 
   UPDATE() {
