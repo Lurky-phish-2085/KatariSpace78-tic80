@@ -497,18 +497,19 @@ class ShieldParts is Entity {
     super(x, y, w, h, 0)
 
     _sprite = sprite
-    _hp = 4
+    _hp = 3
     _hitSprites = [397, 398, 399]
   }
 
   isDestroyed {_hp == 0}
 
+  damage() {
+    _hp = _hp - 1
+  }
+
   update() {
     super.update()
 
-    if (_hp == 3) {
-      _sprite = _hitSprites[0]
-    }
     if (_hp == 2) {
       _sprite = _hitSprites[1]
     }
@@ -526,8 +527,10 @@ class ShieldParts is Entity {
 
 class Shield is Entity {
 
-  construct new(x, y) {
+  construct new(x, y, playerBullet) {
     super(x, y, 20, 16, 0)
+
+    _playerBullet = playerBullet
 
     _parts = [
       ShieldParts.new(378, x, y, 7, 8),
@@ -539,9 +542,32 @@ class Shield is Entity {
     ]
   }
 
+  checkHit() {
+    _parts.each {|part|
+      if (!(Hitbox.checkCollision(part, _playerBullet))) {
+        return
+      }
+
+      _playerBullet.destroy()
+      part.damage()
+    }
+  }
+
+  removeDestroyedParts() {
+    _parts.each {|part|
+      if (!(part.isDestroyed)) {
+        return
+      }
+
+      _parts.remove(part)
+    }
+  }
+
   update() {
     super.update()
 
+    removeDestroyedParts()
+    checkHit()
     _parts.each {|part|
       part.update()
     }
@@ -566,7 +592,7 @@ class Game is TIC {
     
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new(_p1)
-    _shield = Shield.new(20, 20)
+    _shield = Shield.new(20, 20, _p1.bullet)
   }
 
   UPDATE() {
