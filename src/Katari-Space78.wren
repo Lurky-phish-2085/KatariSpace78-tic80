@@ -357,7 +357,7 @@ class EnemyGroup {
 
     _defaultX = 6
     _x = _defaultX
-    _y = 6
+    _y = 0
     _speed = 0.8
     _numOfRows = 6
     _numOfEnemyPerRow = 6
@@ -586,6 +586,39 @@ class Shield is Entity {
   }
 }
 
+class ShieldRow {
+
+  construct new(player) {
+
+    _player = player
+    _numOfShields = 3
+
+    _defaultX = 30
+    _y = player.y - 30
+
+    _x = _defaultX
+    _spaceX = 80
+
+    _shields = []
+    for (i in 1.._numOfShields) {
+      _shields.add(Shield.new(_x, _y, _player.bullet))
+      _x = _x + _spaceX
+    }
+  }
+
+  update() {
+    _shields.each {|shield|
+      shield.update()
+    }
+  }
+
+  draw() {
+    _shields.each {|shield|
+      shield.draw()
+    }
+  }
+}
+
 class Game is TIC {
 
   construct new() {
@@ -596,13 +629,13 @@ class Game is TIC {
     
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new(_p1)
-    _shield = Shield.new(20, 20, _p1.bullet)
+    _sr = ShieldRow.new(_p1)
   }
 
   UPDATE() {
     _p1.update()
     _eg.update()
-    _shield.update()
+    _sr.update()
 
     _tick = _tick + 1
   }
@@ -610,7 +643,7 @@ class Game is TIC {
   DRAW() {
     _p1.draw()
     _eg.draw()
-    _shield.draw()
+    _sr.draw()
     
     if (_eg.isEmpty()) {
       TIC.font("YOU WIN!", _x + 6, 20, 0, 8, 8, true)
