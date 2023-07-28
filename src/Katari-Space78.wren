@@ -358,9 +358,17 @@ class EnemyGroup {
     _defaultX = 6
     _x = _defaultX
     _y = 0
-    _speed = 0.8
+
+    _speedLevels = [0.2, 0.5, 0.8, 1, 1.5, 4]
+    _speedLevel = 0
+    _speed = _speedLevels[_speedLevel]
+    _speedRecentlyChanged = false
+
+
     _numOfRows = 6
     _numOfEnemyPerRow = 6
+
+    _enemyCount = _numOfRows * _numOfEnemyPerRow
     
     _heavyInvader = Enemy.new(_x, _y, 12, 8, _speed, _player.bullet, 384)
     _mediumInvader = Enemy.new(_x, _y, 11, 8, _speed, _player.bullet, 400)
@@ -422,6 +430,49 @@ class EnemyGroup {
     }
   }
 
+  speedUp() {
+    if (_speedLevel == _speedLevels.count - 1) {
+      return
+    }
+
+    _speedLevel = _speedLevel + 1
+    _speed = _speedLevels[_speedLevel]
+
+    _rows.each {|row|
+      row.each {|enemy|
+        if (enemy.speed < 0) {
+          enemy.speed = -_speed
+        } else {
+          enemy.speed = _speed
+        }
+      }
+    }
+
+    _speedRecentlyChanged = true
+  }
+
+  checkEnemyCount() {
+    if (_speedRecentlyChanged) {
+      return
+    }
+
+    if (_enemyCount == 21) {
+      speedUp()
+    }
+    if (_enemyCount == 7) {
+      speedUp()
+    }
+    if (_enemyCount == 4) {
+      speedUp()
+    }
+    if (_enemyCount == 3) {
+      speedUp()
+    }
+    if (_enemyCount == 1) {
+      speedUp()
+    }
+  }
+
   checkHomeBaseHit() {
     _rows.each {|row|
         row.each {|enemy|
@@ -467,6 +518,8 @@ class EnemyGroup {
         }
 
         row.remove(enemy)
+        _enemyCount = _enemyCount - 1
+        _speedRecentlyChanged = false
       }
     }
   }
@@ -476,6 +529,7 @@ class EnemyGroup {
       return
     }
 
+    checkEnemyCount()
     checkHomeBaseHit()
     checkPlayerHit()
     checkBoundaryHit()
@@ -487,6 +541,8 @@ class EnemyGroup {
   }
   
   draw() {
+    TIC.font("%(_enemyCount)", 6, 6, 0, 8, 8, true)
+
     _rows.each {|row|
       row.each {|enemy| enemy.draw()}
     }
