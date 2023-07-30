@@ -264,7 +264,7 @@ class Player is Entity {
 
 class Enemy is Entity {
 
-  construct new(x, y, w, h, speed, playerBullet, sprite) {
+  construct new(x, y, w, h, speed, playerBullet, sprite, points) {
     super(x, y, w, h, speed)
 
     if (!(playerBullet is Bullet)) {
@@ -272,6 +272,7 @@ class Enemy is Entity {
     }
 
     _sprite = sprite
+    _points = points
 
     _destroySfx = 0
     
@@ -292,6 +293,7 @@ class Enemy is Entity {
     }
 
     _sprite = enemy.sprite
+    _points = enemy.points
 
     _destroySfx = 0
     
@@ -304,6 +306,7 @@ class Enemy is Entity {
     _wentEitherSides = false
   }
   
+  points {_points}
   destroyed  {_destroyed}
   wentEitherSides {_wentEitherSides}
   wentEitherSides=(value) {_wentEitherSides = value}
@@ -370,9 +373,9 @@ class EnemyGroup {
 
     _enemyCount = _numOfRows * _numOfEnemyPerRow
     
-    _heavyInvader = Enemy.new(_x, _y, 12, 8, _speed, _player.bullet, 384)
-    _mediumInvader = Enemy.new(_x, _y, 11, 8, _speed, _player.bullet, 400)
-    _lightInvader = Enemy.new(_x, _y, 8, 8, _speed, _player.bullet, 416)
+    _heavyInvader = Enemy.new(_x, _y, 12, 8, _speed, _player.bullet, 384, 10)
+    _mediumInvader = Enemy.new(_x, _y, 11, 8, _speed, _player.bullet, 400, 20)
+    _lightInvader = Enemy.new(_x, _y, 8, 8, _speed, _player.bullet, 416, 30)
 
     /* TODO:
     
@@ -391,14 +394,14 @@ class EnemyGroup {
         var invader = null
 
         if (i == 0) {
-          invader = Enemy.new(_x, _y, 8, 8, _speed, _player.bullet, 416)
+          invader = Enemy.new(_x, _y, 8, 8, _speed, _player.bullet, 416, 30)
           _x = _x + 0.6
         }
         if (i >= 1 && i <= _rows.count - 2) {
-          invader = Enemy.new(_x, _y, 11, 8, _speed, _player.bullet, 400)
+          invader = Enemy.new(_x, _y, 11, 8, _speed, _player.bullet, 400, 20)
         }
         if (i >= _rows.count - 2) {
-          invader = Enemy.new(_x, _y, 12, 8, _speed, _player.bullet, 384)
+          invader = Enemy.new(_x, _y, 12, 8, _speed, _player.bullet, 384, 10)
         }
 
         _rows[i].add(Enemy.new(invader))
@@ -510,6 +513,10 @@ class EnemyGroup {
     }
   }
 
+  rewardPlayer(points) {
+    _player.score = _player.score + points
+  }
+
   removeDestroyedEnemy() {
     _rows.each {|row|
       row.each {|enemy|
@@ -517,6 +524,7 @@ class EnemyGroup {
           return
         }
 
+        rewardPlayer(enemy.points)
         row.remove(enemy)
         _enemyCount = _enemyCount - 1
         _speedRecentlyChanged = false
@@ -695,6 +703,31 @@ class ShieldRow {
   }
 }
 
+class Hud {
+
+  construct new(x, y, player) {
+    _x = x
+    _y = y
+    _player = player
+    _score = player.score
+  }
+
+  x {_x}
+  y {_y}
+
+  update() {
+    _score = _player.score
+  }
+
+  draw() {
+    TIC.font("SCORE<1>", _x, _y, 0, 8, 8, false)
+    //TIC.font("0000", _x + 51, _y, 0, 8, 8, false)
+    TIC.font("%(_score)", _x + 51, _y, 0, 8, 8, false)
+    TIC.font("SCORE<2>", _x + WIDTH - 74, _y, 0, 8, 8, false)
+    TIC.font("0000", _x + 217, _y, 0, 8, 8, false)
+  }
+}
+
 class Game is TIC {
 
   construct new() {
@@ -706,12 +739,14 @@ class Game is TIC {
     _p1 = Player.new(WIDTH/2 - 16, HEIGHT - 20, 16, 8, 1)
     _eg = EnemyGroup.new(_p1)
     _sr = ShieldRow.new(_p1, _eg)
+    _hud = Hud.new(0, 0, _p1)
   }
 
   UPDATE() {
     _p1.update()
     _eg.update()
     _sr.update()
+    _hud.update()
 
     _tick = _tick + 1
   }
@@ -730,6 +765,10 @@ class Game is TIC {
       TIC.font("GAME OVER!", _x + 6, 20, 0, 8, 8, true)
     }
 
+  }
+
+  OVR() {
+    _hud.draw()
     TIC.font("KATARI SPACE 1978", _x - 30, _y, 0, 8, 8, true)
     TIC.font("GAMEPLAY PROTOTYPE", _x - 36, _y + 9, 0, 8, 8, true)
   }
