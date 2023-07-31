@@ -703,6 +703,29 @@ class ShieldRow {
   }
 }
 
+class Format {
+
+  static toScoreString(number) {
+    if (!(number is Num)) {
+      Fiber.abort("Format error: supplied argument is not of type Num")
+    }
+
+    if (number > 999) {
+      return number.toString
+    }
+
+    if (number < 9) {
+      return "000%(number)"
+    }
+    if (number > 9) {
+      return "00%(number)"
+    }
+    if (number > 99) {
+      return "0%(number)"
+    }
+  }
+}
+
 class Hud {
 
   construct new(x, y, player) {
@@ -722,7 +745,7 @@ class Hud {
   draw() {
     TIC.font("SCORE<1>", _x, _y, 0, 8, 8, false)
     //TIC.font("0000", _x + 51, _y, 0, 8, 8, false)
-    TIC.font("%(_score)", _x + 51, _y, 0, 8, 8, false)
+    TIC.font("%(Format.toScoreString(_score))", _x + 51, _y, 0, 8, 8, false)
     TIC.font("SCORE<2>", _x + WIDTH - 74, _y, 0, 8, 8, false)
     TIC.font("0000", _x + 217, _y, 0, 8, 8, false)
   }
