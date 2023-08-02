@@ -19,6 +19,8 @@ var BTN_X=6
 var BTN_Y=7
 var KEY_SPC=48
 
+var HIDE_HUD=false
+
 class Entity {
 
   construct new(x, y, w, h, speed) {
@@ -557,6 +559,21 @@ class EnemyGroup {
   }
 }
 
+class Ufo is Entity {
+  construct new(x, y, w, h, speed) {
+    super(x, y, w, h, speed)
+    _sprite = 352
+    _damagedSprite = 354
+  }
+
+  update() {
+    super.update()
+  }
+
+  draw() {
+  }
+}
+
 class ShieldParts is Entity {
 
   construct new(sprite, x, y, w, h) {
@@ -743,6 +760,10 @@ class Hud {
   }
 
   draw() {
+    if (HIDE_HUD) {
+      return
+    }
+
     TIC.font("SCORE<1>", _x, _y, 0, 8, 8, false)
     //TIC.font("0000", _x + 51, _y, 0, 8, 8, false)
     TIC.font("%(Format.toScoreString(_score))", _x + 51, _y, 0, 8, 8, false)
@@ -765,7 +786,15 @@ class Game is TIC {
     _hud = Hud.new(0, 0, _p1)
   }
 
+  evalInput() {
+    if (TIC.keyp(28, 1, -1)) {
+      HIDE_HUD = !HIDE_HUD
+    }
+  }
+
   UPDATE() {
+    evalInput()
+
     _p1.update()
     _eg.update()
     _sr.update()
