@@ -560,17 +560,23 @@ class EnemyGroup {
 }
 
 class Ufo is Entity {
-  construct new(x, y, w, h, speed) {
-    super(x, y, w, h, speed)
+  construct new() {
+    super(-16, 0, 16, 8, 0.5)
     _sprite = 352
     _damagedSprite = 354
+    _points = 100 // TODO: Mystery points is fixed
+
+    _isDamaged = false
   }
+
+  isDamaged {_isDamaged}
 
   update() {
     super.update()
   }
 
   draw() {
+    TIC.spr(_sprite, x, y, 0, 1, 0, 0, 2, 1)
   }
 }
 
@@ -784,6 +790,7 @@ class Game is TIC {
     _eg = EnemyGroup.new(_p1)
     _sr = ShieldRow.new(_p1, _eg)
     _hud = Hud.new(0, 0, _p1)
+    _ufo = Ufo.new()
   }
 
   evalInput() {
@@ -799,6 +806,7 @@ class Game is TIC {
     _eg.update()
     _sr.update()
     _hud.update()
+    _ufo.update()
 
     _tick = _tick + 1
   }
@@ -807,6 +815,7 @@ class Game is TIC {
     _p1.draw()
     _eg.draw()
     _sr.draw()
+    _ufo.draw()
     
     if (_eg.isEmpty()) {
       TIC.font("YOU WIN!", _x + 6, 20, 0, 8, 8, true)
