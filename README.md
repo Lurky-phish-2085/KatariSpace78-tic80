@@ -2,6 +2,10 @@
 
 Hit 1978 Space game from Katari
 
+## Status
+
+Prototype
+
 ## Installation and Running
 
 1. Install tic80 [here](https://github.com/nesbox/TIC-80)
